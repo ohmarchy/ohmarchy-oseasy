@@ -43,6 +43,10 @@ The guest's network shell (root on tcp/5000, without a password), which the
 `OHMARCHY_NETSHELL=1` in the environment of 40-build-boot.sh. Build that way
 for development, never for an ISO others install.
 
+GitHub Actions builds the ISO without the shell (`.github/workflows/oseasy-iso.yml`,
+run by hand or by an `oseasy-v*` tag) and attaches it, split in parts, to a
+draft pre-release.
+
 Host tools: bash, python3, curl, unzip, bsdtar (libarchive), cpio, gzip,
 qemu-img, sfdisk/blkid (util-linux), mtools, xorriso, kmod (depmod), make,
 clang (with the `aarch64` target, any recent version), hdc; docker or podman

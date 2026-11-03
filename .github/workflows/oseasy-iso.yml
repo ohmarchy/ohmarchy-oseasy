@@ -1,0 +1,105 @@
+name: Oseasy ISO
+
+# Build route B's installer ISO from this commit and attach it to a draft
+# pre-release, split under GitHub's 2 GiB asset limit. 26, 27 and 28 chroot into
+# the aarch64 image, hence the arm64 runner (free for public repositories). The
+# network shell stays off: OHMARCHY_NETSHELL=0 is for builds anyone installs.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['oseasy-v*']
+
+permissions:
+  contents: write
+
+jobs:
+  iso:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      OHMARCHY_NETSHELL: 0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make room
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
+          sudo docker system prune -af >/dev/null
+          # the work tree goes on whichever disk has more room
+          w=$RUNNER_TEMP/ohmarchy-work
+          if [ -d /mnt ] && (( $(df --output=avail /mnt | tail -1) > $(df --output=avail / | tail -1) )); then
+            w=/mnt/ohmarchy-work
+          fi
+          sudo mkdir -p "$w"
+          echo "WORK=$w" >> "$GITHUB_ENV"
+          df -h / /mnt 2>/dev/null
+
+      - name: Host tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends ca-certificates curl unzip libarchive-tools \
+            cpio gzip pigz zstd qemu-utils fdisk util-linux mount mtools xorriso kmod python3 \
+            make clang lld >/dev/null
+
+      - name: Build
+        run: |
+          step() {
+            echo "::group::$1"
+            sudo -E bash "oseasy/$1.sh"
+            echo "::endgroup::"
+            df -h "$WORK" | tail -1
+          }
+          step 10-fetch-inputs
+          step 20-build-modules
+          step 25-build-kernel-7.2
+          sudo rm -rf "$WORK/dl/k72"; sudo docker system prune -af >/dev/null
+          step 30-prepare-image
+          sudo rm -f "$WORK"/dl/Omarchy-virt.utm.zip.part-* "$WORK/dl/omarchy-aarch64-virt.qcow2"
+          step 26-package-kernel-7.2
+          step 27-build-aquamarine
+          step 28-build-extras
+          step 40-build-boot
+          step 50-make-installer-iso
+
+      - name: Split
+        id: split
+        run: |
+          cd "$WORK"
+          sudo rm -f omarchy.raw omarchy.raw.gz esp.img.gz
+          name=omarchy-install-oseasy-${GITHUB_SHA::8}.iso
+          sudo mv omarchy-install.iso "$name"
+          sum=$(sha256sum "$name" | cut -d' ' -f1)
+          sudo split -b 1900M -d -a 1 "$name" "$name.part-"
+          sudo rm -f "$name"
+          { echo "$sum  $name"; sha256sum "$name".part-*; } | sudo tee SHA256SUMS
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "sum=$sum" >> "$GITHUB_OUTPUT"
+
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NAME: ${{ steps.split.outputs.name }}
+          SUM: ${{ steps.split.outputs.sum }}
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then tag=$GITHUB_REF_NAME; else tag=oseasy-build-${GITHUB_SHA::8}; fi
+          cat > "$RUNNER_TEMP/notes.md" <<EOF
+          Omarchy for the Oseasy VM on HarmonyOS PCs, built from ${GITHUB_SHA::8}. Experimental: verified on a MateBook Fold, HarmonyOS 7.0.0.111, Oseasy 3.1.0.
+
+          Download every part, then join and check them:
+
+          \`\`\`sh
+          cat $NAME.part-* > $NAME
+          echo "$SUM  $NAME" | sha256sum -c
+          \`\`\`
+
+          Copy the ISO to the HarmonyOS Download folder (下载) and install it as in [docs/oseasy-whole-os.md](../../blob/${GITHUB_SHA}/docs/oseasy-whole-os.md#install-in-oseasy).
+
+          Before you start:
+
+          - Do not close the Oseasy window or shut the VM down: Oseasy then reports the install as failed, and **再次安装** wipes the disk. Minimize the window instead.
+          - The screen is 800x600 with software rendering.
+          - \`omarchy-update\` needs github.com.
+          EOF
+          gh release create "$tag" --draft --prerelease --target "$GITHUB_SHA" \
+            --title "Omarchy for Oseasy (${GITHUB_SHA::8})" --notes-file "$RUNNER_TEMP/notes.md" \
+            "$WORK/$NAME".part-* "$WORK/SHA256SUMS"
