@@ -47,11 +47,12 @@ The desktop needs the optional steps too:
 
 | Script | Output | Installed by |
 |---|---|---|
-| `25-build-kernel-7.2.sh` | the patched 7.2 kernel: UKIs and the `linux-ohmarchy-oseasy` package | `40-build-boot.sh` (entries), the setup (package) |
+| `25-build-kernel-7.2.sh` | the patched 7.2 kernel: Image and modules | `40-build-boot.sh` (UKIs and entries) |
+| `26-package-kernel-7.2.sh` | the same kernel as the `linux-ohmarchy-oseasy` package (`kernel/pkg/PKGBUILD`) | the setup |
 | `27-build-aquamarine.sh` | aquamarine with `oseasy/aquamarine/0001-*.patch` | the setup, over the same upstream version |
 | `28-build-extras.sh` | `ohmarchy-glfinish.so` and the Pinyin packages | the setup |
 
-27 and 28 build inside a throwaway copy of the image's root
+26, 27 and 28 run after `30-prepare-image.sh` and build inside a throwaway copy of the image's root
 (`oseasy/lib/image-chroot.sh`), so they need root, btrfs and overlayfs on an
 aarch64 host, for example `docker run --privileged` on an Apple silicon Mac.
 
@@ -148,7 +149,6 @@ LEDs come into step with HarmonyOS's lock state.
 
 ## Network shell
 
-From the host: `tools/fold/guest.sh 'uname -a; ip -br addr'`. The HarmonyOS
 A root shell without a password, for anything that reaches the VM bridge, so
 it is off unless the ISO is built with `OHMARCHY_NETSHELL=1` (`oseasy/config.sh`,
 read by `40-build-boot.sh`). Such a build puts the flag `/etc/ohmarchy/netshell`
@@ -163,6 +163,7 @@ sudo systemctl restart omarchy-netremote
 The hold entry (`omarchy_hold=1`) serves the initramfs shell in every build,
 since continuing needs it.
 
+From the host: `tools/fold/guest.sh 'uname -a; ip -br addr'`. The HarmonyOS
 shell may open outgoing TCP connections (`netcat`) but not listening sockets,
 so the guest listens:
 

@@ -22,6 +22,7 @@ oseasy/10-fetch-inputs.sh       # Omarchy image (3.7 GB), Debian 6.1 kernel debs
 oseasy/20-build-modules.sh      # SVGA driver + efidrm module against Debian's 6.1 headers
 oseasy/25-build-kernel-7.2.sh   # patched 7.2 kernel in a container (needed for the desktop)
 oseasy/30-prepare-image.sh      # qcow2 -> raw, read the partition layout and root UUID
+oseasy/26-package-kernel-7.2.sh # the 7.2 kernel as the linux-ohmarchy-oseasy package (root, in the image's root)
 oseasy/27-build-aquamarine.sh   # aquamarine without the per-frame renderer retry (root, in the image's root)
 oseasy/28-build-extras.sh       # ohmarchy-glfinish.so and the Pinyin packages (root, in the image's root)
 oseasy/40-build-boot.sh         # boot entries (UKIs), Limine menu and first-boot files into the image's ESP
@@ -31,7 +32,7 @@ oseasy/60-push-iso.sh           # copy the ISO to the HarmonyOS Download folder
 
 On macOS (or without the host tools), run the steps in a container with
 `oseasy/in-docker.sh STEP...`, for example
-`oseasy/in-docker.sh 27-build-aquamarine 28-build-extras 40-build-boot 50-make-installer-iso`;
+`oseasy/in-docker.sh 26-package-kernel-7.2 27-build-aquamarine 28-build-extras 40-build-boot 50-make-installer-iso`;
 25 and 60 still run on the host.
 
 Then follow the install steps in [docs/oseasy-whole-os.md](docs/oseasy-whole-os.md#install-in-oseasy).
@@ -45,7 +46,7 @@ for development, never for an ISO others install.
 Host tools: bash, python3, curl, unzip, bsdtar (libarchive), cpio, gzip,
 qemu-img, sfdisk/blkid (util-linux), mtools, xorriso, kmod (depmod), make,
 clang (with the `aarch64` target, any recent version), hdc; docker or podman
-for the 7.2 kernel. 27 and 28 need root with btrfs and overlayfs on an aarch64
+for the 7.2 kernel. 26, 27 and 28 need root with btrfs and overlayfs on an aarch64
 host (`docker run --privileged` on an Apple silicon Mac works).
 
 ## Layout

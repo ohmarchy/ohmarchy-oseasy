@@ -2,7 +2,7 @@
 # in-docker.sh STEP...: run oseasy/<STEP>.sh in a Debian container, for hosts
 # without the tools (macOS among them). Example, after 25-build-kernel-7.2.sh:
 #
-#   oseasy/in-docker.sh 10-fetch-inputs 20-build-modules 30-prepare-image \
+#   oseasy/in-docker.sh 10-fetch-inputs 20-build-modules 30-prepare-image 26-package-kernel-7.2 \
 #       27-build-aquamarine 28-build-extras 40-build-boot 50-make-installer-iso
 #
 # The work tree is a docker volume ($OHMARCHY_VOLUME), not the host's work/:

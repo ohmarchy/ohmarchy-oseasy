@@ -6,8 +6,9 @@
 # kernel, which hangs in the Oseasy VM.
 #
 # Inputs next to this file: Image and modules.tar.gz (usr/lib/modules/<kver>/...),
-# both from $WORK/k72. Build with makepkg as a normal user, install with
-# `pacman -U --overwrite '/usr/lib/modules/<kver>/*'`; it replaces linux-aarch64.
+# both from $WORK/k72. oseasy/26-package-kernel-7.2.sh builds it in the image's
+# root; install with `pacman -U --overwrite '/usr/lib/modules/<kver>/*'`; it
+# replaces linux-aarch64.
 
 pkgname=linux-ohmarchy-oseasy
 pkgver=7.2.11
