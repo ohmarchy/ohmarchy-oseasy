@@ -1,6 +1,6 @@
 timeout: 10
 default_entry: 1
-interface_branding: Omarchy on HarmonyOS (Oseasy VM) - shell 172.16.100.2:5000
+interface_branding: Omarchy on HarmonyOS (Oseasy VM)
 hash_mismatch_panic: no
 term_background: 1a1b26
 backdrop: 1a1b26

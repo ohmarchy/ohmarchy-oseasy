@@ -29,7 +29,7 @@ mkdir -p "$root/work"
 
 "$DOCKER" run --rm --privileged \
     -v "$OHMARCHY_VOLUME:/work" -v "$root:/ohmarchy" -v "$root/work:/host-work" \
-    -e WORK=/work -e STEPS="$*" "$OHMARCHY_BUILD_IMAGE" bash -euo pipefail -c '
+    -e WORK=/work -e STEPS="$*" -e OHMARCHY_NETSHELL "$OHMARCHY_BUILD_IMAGE" bash -euo pipefail -c '
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends ca-certificates curl unzip libarchive-tools \

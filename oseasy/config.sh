@@ -43,6 +43,12 @@ OHMARCHY_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 : "${HDC:=hdc}"
 : "${HDC_TARGET:=}"
 
+# Network shell: a root shell on tcp/5000 and an upload on tcp/5001 at
+# 172.16.100.2, without a password, for anything that reaches the VM bridge. The
+# hdc tools (tools/fold/guest.sh and the rest) need it; 1 for development builds
+# only. Without it the guest still takes its bridge address.
+: "${OHMARCHY_NETSHELL:=0}"
+
 # Kernel command line shared by all boot entries; ROOT_UUID is read from the image.
 KCMD_BASE='rw rootflags=subvol=@ rootwait console=ttyAMA0,115200 console=tty1 loglevel=6'
 

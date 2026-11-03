@@ -1,5 +1,5 @@
 [Unit]
-Description=ohmarchy network shell on the Oseasy VM bridge (tcp/5000, upload tcp/5001)
+Description=ohmarchy Oseasy VM bridge address, and the network shell when enabled (tcp/5000, upload tcp/5001)
 DefaultDependencies=no
 After=systemd-udevd.service
 Before=sysinit.target

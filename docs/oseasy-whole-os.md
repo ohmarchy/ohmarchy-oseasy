@@ -64,7 +64,7 @@ Boot entries written to the ESP (`oseasy/limine.conf.in`):
 | efidrm KMS | `omarchy_gpu=efidrm` | experimental: `omarchy_efidrm` provides card0 on the EFI framebuffer |
 | SVGA 3D driver | `omarchy_gpu=svga` | experimental: `vmwgfx` with `hvm_mmio=1 hvm_display=2` |
 | stock 7.x kernel | | Omarchy's own UKI, kept for reference (hangs) |
-| patched 7.2 kernel, efidrm KMS | the polling options | default: 7.2.11 from `25-build-kernel-7.2.sh`, with ohmarchy's initramfs layers (network shell, first-boot setup) |
+| patched 7.2 kernel, efidrm KMS | the polling options | default: 7.2.11 from `25-build-kernel-7.2.sh`, with ohmarchy's initramfs layers (bridge address, first-boot setup, the network shell in development builds) |
 | patched 7.2 kernel, earlycon | the above plus `earlycon=efifb keep_bootcon ignore_loglevel` | the same, printing from early boot on |
 
 The last two are added, and the first of them made the default, only when
@@ -101,7 +101,8 @@ Limine boots the patched 7.2 kernel by default (or **EFI framebuffer**
 without it). The initramfs:
 
 - gives the VM NIC `172.16.100.2/24` (the HarmonyOS side of the bridge is
-  `172.16.100.1`; there is no DHCP) and serves a root shell on tcp/5000;
+  `172.16.100.1`; there is no DHCP) and, in development builds, serves a root
+  shell on tcp/5000 (see [network shell](#network-shell));
 - installs Debian's 6.1 modules into Omarchy's root from the ESP
   (`/ohmarchy/modules-<kver>.tar.gz`), since the root only carries modules for
   Omarchy's own kernel;
@@ -148,8 +149,22 @@ LEDs come into step with HarmonyOS's lock state.
 ## Network shell
 
 From the host: `tools/fold/guest.sh 'uname -a; ip -br addr'`. The HarmonyOS
+A root shell without a password, for anything that reaches the VM bridge, so
+it is off unless the ISO is built with `OHMARCHY_NETSHELL=1` (`oseasy/config.sh`,
+read by `40-build-boot.sh`). Such a build puts the flag `/etc/ohmarchy/netshell`
+into the installed root. Without the flag `omarchy-netremote.service` only keeps
+the bridge address; to turn the shell on later, in the VM:
+
+```sh
+sudo mkdir -p /etc/ohmarchy && sudo touch /etc/ohmarchy/netshell
+sudo systemctl restart omarchy-netremote
+```
+
+The hold entry (`omarchy_hold=1`) serves the initramfs shell in every build,
+since continuing needs it.
+
 shell may open outgoing TCP connections (`netcat`) but not listening sockets,
-so the guest always listens:
+so the guest listens:
 
 | Port | Service |
 |---|---|

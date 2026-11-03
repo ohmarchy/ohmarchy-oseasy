@@ -37,6 +37,11 @@ On macOS (or without the host tools), run the steps in a container with
 Then follow the install steps in [docs/oseasy-whole-os.md](docs/oseasy-whole-os.md#install-in-oseasy).
 Settings live in `oseasy/config.sh`; outputs go to `work/`.
 
+The guest's network shell (root on tcp/5000, without a password), which the
+`tools/fold` helpers drive the VM through, is off unless the ISO is built with
+`OHMARCHY_NETSHELL=1` in the environment of 40-build-boot.sh. Build that way
+for development, never for an ISO others install.
+
 Host tools: bash, python3, curl, unzip, bsdtar (libarchive), cpio, gzip,
 qemu-img, sfdisk/blkid (util-linux), mtools, xorriso, kmod (depmod), make,
 clang (with the `aarch64` target, any recent version), hdc; docker or podman
@@ -47,7 +52,7 @@ host (`docker run --privileged` on an Apple silicon Mac works).
 
 ```
 oseasy/            build pipeline for route B (10..60), config, boot menu template
-  initramfs/       overlay added to the 6.1 initramfs: network shell, GPU modes, first-boot module install
+  initramfs/       overlay added to the 6.1 initramfs: bridge address and network shell, GPU modes, first-boot module install
   installer/       scripts run in the Debian installer's rescue shell inside the VM
   lib/             uki.py (assemble UKIs), modsubset.py (module + dependency subset), image-chroot.sh
   root/            first-boot setup for the installed system, and the VM's input services

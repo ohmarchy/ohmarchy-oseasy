@@ -1,7 +1,9 @@
 #!/usr/bin/ash
-# Network command channel for the Oseasy VM. The VM NIC sits on the HarmonyOS
-# bridge 172.16.100.1/24 without DHCP; the guest takes 172.16.100.2 and serves a
-# shell on tcp/5000. The Fold's hdc shell may connect out but cannot listen.
+# Network for the Oseasy VM. The VM NIC sits on the HarmonyOS bridge
+# 172.16.100.1/24 without DHCP; the guest takes 172.16.100.2. Development builds
+# (/ohmarchy-netshell, OHMARCHY_NETSHELL=1) also serve a shell on tcp/5000, as
+# does the hold entry, which waits for it. The Fold's hdc shell may connect out
+# but cannot listen.
 run_earlyhook() {
     mkdir -p /run/omarchy
     modprobe -q virtio_pci; modprobe -q virtio_net
@@ -17,9 +19,13 @@ run_earlyhook() {
         ip link set "$n" up
         ip addr add 172.16.100.2/24 dev "$n"
         ip route add default via 172.16.100.1
-        tcpsvd -E 0 5000 sh -c 'exec sh 2>&1' >/dev/null 2>&1 &
-        echo $! > /run/omarchy/tcpsvd-initramfs.pid
-        echo "omarchy-net: $n 172.16.100.2/24, shell on tcp/5000" > /dev/kmsg
+        if [ -e /ohmarchy-netshell ] || grep -qw 'omarchy_hold=1' /proc/cmdline; then
+            tcpsvd -E 0 5000 sh -c 'exec sh 2>&1' >/dev/null 2>&1 &
+            echo $! > /run/omarchy/tcpsvd-initramfs.pid
+            echo "omarchy-net: $n 172.16.100.2/24, shell on tcp/5000" > /dev/kmsg
+        else
+            echo "omarchy-net: $n 172.16.100.2/24" > /dev/kmsg
+        fi
     else
         echo "omarchy-net: no virtio_net interface" > /dev/kmsg
     fi

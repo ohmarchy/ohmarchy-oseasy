@@ -29,6 +29,9 @@ mkdir -p "$B/ov"; cp -a "$OHMARCHY_ROOT/oseasy/initramfs/." "$B/ov/"
 # the installed system's Oseasy setup (oseasy/root), copied into the root by omarchy-late
 mkdir -p "$B/ov/ohmarchy-root"; cp -a "$OHMARCHY_ROOT/oseasy/root/." "$B/ov/ohmarchy-root/"
 mv "$B/ov/config-6.1" "$B/ov/config"
+# the network shell only in development builds (config.sh): omarchy-net and
+# omarchy-late look for this flag, and the installed system for its copy
+[ "$OHMARCHY_NETSHELL" = 1 ] && : > "$B/ov/ohmarchy-netshell"
 ( cd "$B/ov" && find . -mindepth 1 | LC_ALL=C sort | cpio --quiet -o -H newc -R 0:0 ) > "$B/overlay.cpio"
 
 CMD="root=UUID=$ROOT_UUID $KCMD_BASE"

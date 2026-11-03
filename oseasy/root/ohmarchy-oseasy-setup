@@ -322,9 +322,10 @@ fallback_entries() {
   grep -q '^/ohmarchy  7.2' "$conf" && return 0
   cat >> "$conf" <<'ENTRIES'
 
-# ohmarchy (Oseasy VM) fallbacks, kept by limine-update: prebuilt UKIs with the
-# initramfs network shell on 172.16.100.2:5000.
-/ohmarchy  7.2, initramfs network shell
+# ohmarchy (Oseasy VM) fallbacks, kept by limine-update: prebuilt UKIs with
+# ohmarchy's initramfs (and its network shell on 172.16.100.2:5000 in
+# development builds).
+/ohmarchy  7.2, ohmarchy initramfs
 protocol: efi
 path: boot():/EFI/Linux/ohmarchy-7.2.efi
 
