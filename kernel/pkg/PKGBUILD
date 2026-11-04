@@ -12,8 +12,8 @@
 
 pkgname=linux-ohmarchy-oseasy
 pkgver=7.2.11
-pkgrel=2
-_kver=7.2.11-ohmarchy-ARCH+
+pkgrel=3
+_kver=7.2.11-ohmarchy-ARCH
 pkgdesc="Arch Linux ARM's linux-aarch64 7.2 with the ohmarchy patches for the HarmonyOS Oseasy VM"
 arch=(aarch64)
 url="https://github.com/ohmarchy/ohmarchy-oseasy"

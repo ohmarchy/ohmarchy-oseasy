@@ -26,6 +26,9 @@ for p in /in/9*.patch; do [ -e "$p" ] && patch -p1 -s < "$p"; done  # local debu
 
 cp /in/alarm/config .config
 echo "$K72_LOCALVERSION" > localversion.10-ohmarchy
+# LOCALVERSION set, even empty, keeps setlocalversion from appending a "+" (it
+# does in a git checkout, for one), so the release matches kernel/pkg/PKGBUILD
+export LOCALVERSION=
 scripts/kconfig/merge_config.sh -m .config /in/config-7.2.fragment >/dev/null
 make "${make_env[@]}" olddefconfig >/dev/null
 for opt in CONFIG_ARM64_RAZ_NEW_ID_REGS=y CONFIG_DRM_EFIDRM=y '# CONFIG_FB_EFI is not set'; do

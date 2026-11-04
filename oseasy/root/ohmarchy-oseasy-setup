@@ -7,7 +7,7 @@
 set -euo pipefail
 
 ESP=/boot
-KVER=7.2.11-ohmarchy-ARCH+
+KVER=7.2.11-ohmarchy-ARCH
 POLL_CMDLINE="virtio_ring.poll_us=1000 virtio_ring.poll_irqs=15"
 OMARCHY_DEFAULT=/usr/share/omarchy/default
 EXTRAS=$ESP/ohmarchy/extras
