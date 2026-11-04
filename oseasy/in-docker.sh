@@ -34,7 +34,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y -qq --no-install-recommends ca-certificates curl unzip libarchive-tools \
     cpio gzip pigz zstd qemu-utils fdisk util-linux mount mtools xorriso kmod python3 \
-    make clang lld >/dev/null
+    make clang lld llvm >/dev/null
 if [ -s /host-work/k72/kver ]; then
     rm -rf /work/k72 && mkdir -p /work/k72/modroot
     cp /host-work/k72/Image /host-work/k72/kver /host-work/k72/config /host-work/k72/modules-*.tar.gz /work/k72/

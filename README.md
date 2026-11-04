@@ -49,7 +49,7 @@ draft pre-release.
 
 Host tools: bash, python3, curl, unzip, bsdtar (libarchive), cpio, gzip,
 qemu-img, sfdisk/blkid (util-linux), mtools, xorriso, kmod (depmod), make,
-clang (with the `aarch64` target, any recent version), hdc; docker or podman
+clang and the llvm tools (with the `aarch64` target, any recent version), hdc; docker or podman
 for the 7.2 kernel. 26, 27 and 28 need root with btrfs and overlayfs on an aarch64
 host (`docker run --privileged` on an Apple silicon Mac works).
 

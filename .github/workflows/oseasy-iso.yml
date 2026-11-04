@@ -39,7 +39,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends ca-certificates curl unzip libarchive-tools \
             cpio gzip pigz zstd qemu-utils fdisk util-linux mount mtools xorriso kmod python3 \
-            make clang lld >/dev/null
+            make clang lld llvm >/dev/null
 
       - name: Build
         run: |
