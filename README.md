@@ -53,6 +53,52 @@ clang (with the `aarch64` target, any recent version), hdc; docker or podman
 for the 7.2 kernel. 26, 27 and 28 need root with btrfs and overlayfs on an aarch64
 host (`docker run --privileged` on an Apple silicon Mac works).
 
+## What Oseasy would need to change
+
+Two gaps in route B are on Oseasy's side, not Omarchy's or the kernel's.
+
+**The install never completes, so the VM does not persist.** Oseasy only
+knows how to finish a Windows install: its install flow waits for Oseasy's own
+Windows guest tools to report back from the VM. Omarchy has nothing that does,
+so the VM stays an unfinished install for its whole life:
+
+- The VM boots and Omarchy runs normally, but Oseasy's main window keeps
+  waiting for Windows and later reports 安装过程出现异常.
+- Oseasy never records the instance as installed and offers no entry to start
+  it again. A normal shutdown in the guest ended at 安装失败 with no way back to
+  the disk; the only way on is **再次安装**, which recreates the disk and boots
+  the ISO again. Closing the window (创建尚未完成，确定退出) ends the same way.
+  Quitting Oseasy or restarting the HarmonyOS PC was not tried; with no start
+  entry there is nothing to come back to.
+- What we could see from the HarmonyOS side: the VM manager keeps an
+  "installing" flag for the instance and, once the Windows tools report that
+  the guest booted, stops the VM to finish the install. The step that then
+  records the install as successful and gives the instance a start entry lives
+  in the Oseasy app, which we could not examine.
+- Imitating the Windows tools from Linux was not taken further: nothing shows
+  Oseasy would then keep the disk, and trying it puts the only running
+  instance at risk.
+
+So today an Omarchy install lasts exactly as long as that one VM run: keep the
+window open (minimize it), keep the PC from shutting the VM down, and keep your
+data elsewhere. Any of these from Oseasy would fix it:
+
+- a way to finish or mark an install as done for guests other than Windows (a
+  "Linux / other" system type, or a confirm button once the guest is up);
+- importing an existing disk image, or creating a VM straight from a disk
+  image, as an installed instance;
+- or Linux guest tools, or a documented guest protocol, that report the
+  install state the way the Windows tools do.
+
+Also, a failed or cancelled install should not recreate the disk without
+asking.
+
+**The window stops refreshing in SVGA mode.** The VM's display device is a
+VMware SVGA II with 3D, and with `driver/vmwgfx-oseasy` the guest could follow
+the window size. But as soon as the guest driver enables SVGA mode, Oseasy
+stops updating the window, so Omarchy stays on the firmware framebuffer at
+800x600 with software rendering. Details in [docs/findings.md](docs/findings.md#the-oseasy-vm).
+
 ## Layout
 
 ```
