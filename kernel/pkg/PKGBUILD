@@ -16,7 +16,7 @@ pkgrel=2
 _kver=7.2.11-ohmarchy-ARCH+
 pkgdesc="Arch Linux ARM's linux-aarch64 7.2 with the ohmarchy patches for the HarmonyOS Oseasy VM"
 arch=(aarch64)
-url="https://github.com/ymote/ohmarchy"
+url="https://github.com/ohmarchy/ohmarchy-oseasy"
 license=(GPL-2.0-only)
 depends=(coreutils kmod mkinitcpio)
 provides=("linux=${pkgver}" "linux-aarch64=${pkgver}" KSMBD-MODULE WIREGUARD-MODULE)
