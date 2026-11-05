@@ -55,49 +55,85 @@ host (`docker run --privileged` on an Apple silicon Mac works).
 
 ## What Oseasy would need to change
 
-Two gaps in route B are on Oseasy's side, not Omarchy's or the kernel's.
+These gaps in route B are on Oseasy's side, not Omarchy's or the kernel's.
 
-**The install never completes, so the VM does not persist.** Oseasy only
-knows how to finish a Windows install: its install flow waits for Oseasy's own
-Windows guest tools to report back from the VM. Omarchy has nothing that does,
-so the VM stays an unfinished install for its whole life:
+**The install never completes, so the VM does not persist.** An Omarchy VM
+lasts exactly as long as one run of it.
+
+What happens:
 
 - The VM boots and Omarchy runs normally, but Oseasy's main window keeps
-  waiting for Windows and later reports 安装过程出现异常.
-- Oseasy never records the instance as installed and offers no entry to start
-  it again. A normal shutdown in the guest ended at 安装失败 with no way back to
-  the disk; the only way on is **再次安装**, which recreates the disk and boots
-  the ISO again. Closing the window (创建尚未完成，确定退出) ends the same way.
-  Quitting Oseasy or restarting the HarmonyOS PC was not tried; with no start
-  entry there is nothing to come back to.
-- What we could see from the HarmonyOS side: the VM manager keeps an
-  "installing" flag for the instance and, once the Windows tools report that
-  the guest booted, stops the VM to finish the install. The step that then
-  records the install as successful and gives the instance a start entry lives
-  in the Oseasy app, which we could not examine.
-- Imitating the Windows tools from Linux was not taken further: nothing shows
-  Oseasy would then keep the disk, and trying it puts the only running
-  instance at risk.
+  waiting for Windows and later reports 安装过程出现异常. Pressing 确定 leaves the
+  VM running.
+- Oseasy never lists the VM as installed and offers no entry to start it again.
+- Ending the run ends the install. A shutdown from inside Omarchy ended at
+  安装失败 with no way back to the disk, and so does closing the VM window
+  (创建尚未完成，确定退出). The only way on is **再次安装**, which recreates the
+  disk and boots the ISO again: everything in the VM is gone.
+- Rebooting from inside Omarchy is fine: the VM restarts in place and boots
+  its disk. Quitting Oseasy, restarting the HarmonyOS PC or updating HarmonyOS
+  were not tried; with no start entry there is nothing to come back to.
 
-So today an Omarchy install lasts exactly as long as that one VM run: keep the
-window open (minimize it), keep the PC from shutting the VM down, and keep your
-data elsewhere. Any of these from Oseasy would fix it:
+Why:
 
-- a way to finish or mark an install as done for guests other than Windows (a
-  "Linux / other" system type, or a confirm button once the guest is up);
-- importing an existing disk image, or creating a VM straight from a disk
-  image, as an installed instance;
-- or Linux guest tools, or a documented guest protocol, that report the
-  install state the way the Windows tools do.
+- Creating a VM in Oseasy is a Windows install. The VM starts in an
+  "installing" state, and it leaves that state only when Oseasy's own Windows
+  guest tools, running inside the VM, report that Windows has booted. On the
+  HarmonyOS side the VM manager then stops the VM to finish the install;
+  recording it as installed and giving it a start entry happens in the Oseasy
+  app, which we could not examine.
+- There is no system type other than Windows, no way to mark an install as
+  done by hand, no Linux version of the guest tools, and no documentation of
+  what they send. So for Oseasy the Omarchy VM is a Windows install that never
+  finished, and an unfinished install has nothing to resume: any end of the run
+  counts as a failed install, and the retry starts from an empty disk.
+- Imitating the Windows tools from Linux was not taken further. Nothing shows
+  that Oseasy would then keep the disk, the protocol is undocumented, and every
+  attempt puts the only running instance at risk.
 
-Also, a failed or cancelled install should not recreate the disk without
-asking.
+What Oseasy could do (any one of the first three fixes it):
+
+- a system type for Linux and other guests, or a button to confirm the install
+  once the guest is up;
+- creating a VM from an existing disk image, or importing one, as an installed
+  instance;
+- Linux guest tools, or a documented guest protocol, that report the install
+  state the way the Windows tools do;
+- and, independently, keep the disk when an install fails or is cancelled, and
+  ask before 再次安装 recreates it.
+
+Until then, if you use Omarchy in Oseasy:
+
+- Minimize the VM window, never close it, and do not shut Omarchy down; reboot
+  instead when you need to.
+- Treat the VM as disposable. Keep your work and dotfiles outside it (a git
+  remote, a sync service) so a reinstall, about twenty minutes from the ISO,
+  costs nothing but the time.
+- Copy anything you need out over the network before you stop the VM on
+  purpose. In a development build, `tools/fold/guest-get.sh` copies files from
+  the guest to the host over the network shell.
 
 **The window stops refreshing in SVGA mode.** The VM's display device is a
 VMware SVGA II with 3D, and with `driver/vmwgfx-oseasy` the guest could follow
 the window size. But as soon as the guest driver enables SVGA mode, Oseasy
 stops updating the window, so Omarchy stays on the firmware framebuffer at
 800x600 with software rendering. Details in [docs/findings.md](docs/findings.md#the-oseasy-vm).
+
+**No clipboard or shared folder with HarmonyOS.** Both come with Oseasy's
+Windows guest tools, and a Linux guest gets neither:
+
+- Every VM has a virtiofs device (tag `shared_dir`), but Oseasy starts
+  `virtiofsd` without a directory to share unless its Windows tools set one up,
+  so there is nothing for Linux to mount.
+- Copy and paste between HarmonyOS and the VM is a feature of Oseasy's Windows
+  guest agent, which talks to the host over the VM's virtio-serial ports; there
+  is no Linux agent and no documented protocol to write one against.
+
+Today files reach the VM only through the installer ISO or the network, and
+text not at all. What would fix it: share the chosen HarmonyOS folder over
+virtiofs for any guest (Linux mounts it with `mount -t virtiofs shared_dir
+/mnt`), and offer the clipboard through a Linux agent or a documented channel
+(the spice-vdagent protocol, for one, which Linux desktops already speak).
 
 ## Layout
 
